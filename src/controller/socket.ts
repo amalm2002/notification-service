@@ -2,7 +2,7 @@
 import { Server as HttpServer } from "http";
 import { Server as SocketIOServer } from "socket.io";
 import jwt from 'jsonwebtoken'
-import { Tokens,AuthenticatedSocket } from "../interfaces/interface";
+import { Tokens, AuthenticatedSocket } from "../interfaces/interface";
 import { AuthUtility } from "../util/authUtil";
 
 const authUtility = new AuthUtility();
@@ -30,17 +30,17 @@ export const setupSocketIO = (server: HttpServer): SocketIOServer => {
 }
 
 const refreshTokenWithAuthClient = async (refreshToken: string): Promise<Tokens> => {
-  try {
-    const decoded = authUtility.verifyRefreshToken(refreshToken);
-    const { accessToken, refreshToken: newRefreshToken } = authUtility.generateTokens(decoded.id, decoded.role);
+    try {
+        const decoded = authUtility.verifyRefreshToken(refreshToken);
+        const { accessToken, refreshToken: newRefreshToken } = authUtility.generateTokens(decoded.id, decoded.role);
 
-    return {
-      accessToken: accessToken,   
-      refreshToken: newRefreshToken,
-    };
-  } catch (error) {
-    throw new Error("Invalid refresh token");
-  }
+        return {
+            accessToken: accessToken,
+            refreshToken: newRefreshToken,
+        };
+    } catch (error) {
+        throw new Error("Invalid refresh token");
+    }
 };
 
 
@@ -145,13 +145,13 @@ const setupAdminEvents = (socket: AuthenticatedSocket, io: SocketIOServer, userI
 }
 
 const setupUserEvents = (socket: AuthenticatedSocket, io: SocketIOServer, userId: string) => {
-    socket.on('order-placed', ({ restaurantId: targetRestaurantId, orderId }: { restaurantId: string, orderId: string }) => {
+    socket.on('order-placed', ({ restaurantId: targetRestaurantId, orderId,orderNumber }: { restaurantId: string, orderId: string,orderNumber:number }) => {
         console.log(`Received the order-placed event for targetId:${targetRestaurantId} from the user:${userId}`);
         const targetSocketId = userSocketMap[targetRestaurantId];
         if (targetSocketId) {
             console.log('order id :', orderId);
             console.log(`Emitting order-created event to socket: ${targetSocketId} for restaurant: ${targetRestaurantId}`);
-            io.to(targetSocketId).emit("order-created", { orderId, restaurantId: targetRestaurantId });
+            io.to(targetSocketId).emit("order-created", { orderId, restaurantId: targetRestaurantId ,orderNumber});
         } else {
             console.error(`No socket found for restaurant: ${targetRestaurantId} in userSocketMap`);
             socket.emit("error", {
