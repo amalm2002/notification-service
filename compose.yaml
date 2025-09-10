@@ -1,0 +1,16 @@
+services:
+  server:
+    build:
+      context: .
+    env_file:
+      - .env    
+    environment:
+      NODE_ENV: production
+    ports:
+      - "3010:3010"
+    networks:
+      - backend
+
+networks:
+  backend:
+    external: true

@@ -43,7 +43,6 @@ const refreshTokenWithAuthClient = async (refreshToken: string): Promise<Tokens>
     }
 };
 
-
 const authenticateSocket = async (socket: AuthenticatedSocket, next: (err?: Error) => void) => {
     const { token, refreshToken } = socket.handshake.query as { token: string; refreshToken: string };
 
