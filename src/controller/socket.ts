@@ -12,13 +12,13 @@ const userSocketMap: { [key: string]: string } = {};
 export const setupSocketIO = (server: HttpServer): SocketIOServer => {
     const io = new SocketIOServer(server, {
         cors: {
-            origin: process.env.CORS_ORGIN,
+            origin: process.env.CORS_ORIGIN,
             methods: ['GET', 'POST', 'PATCH'],
             credentials: true
         },
     })
 
-    console.log(`Socket.IO initialized with CORS origin: ${process.env.CORS_ORGIN}`);
+    console.log(`Socket.IO initialized with CORS origin: ${process.env.CORS_ORIGIN}`);
 
     io.use(authenticateSocket);
 
