@@ -1,23 +1,15 @@
 
-ARG NODE_VERSION=20
+FROM node:20-alpine
 
-FROM node:${NODE_VERSION}-alpine
-
-
-ENV NODE_ENV production
-
-
+ENV NODE_ENV=production
 WORKDIR /usr/src/app
 
-RUN --mount=type=bind,source=package.json,target=package.json \
-    --mount=type=bind,source=package-lock.json,target=package-lock.json \
-    --mount=type=cache,target=/root/.npm \
-    npm ci --omit=dev
+COPY package*.json ./
 
-USER node
+RUN --mount=type=cache,id=npm-cache,target=/root/.npm \
+    npm ci --omit=dev
 
 COPY . .
 
 EXPOSE 3010
-
-CMD npm start
+CMD ["node", "dist/server.js"]
