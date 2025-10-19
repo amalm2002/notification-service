@@ -44,17 +44,30 @@ export const setupSocketIO = (server: HttpServer): SocketIOServer => {
     },
   });
 
-  io.use((socket, next) => {
-    console.log("🔐 auth middleware start", socket.handshake.query);
-    next();
+  // 1) Log raw Engine.IO connections (proves the transport is established)
+  io.engine.on("connection", (raw) => {
+    console.log("🧱 engine connection:", raw.id);
   });
 
+  // 2) Log connection for *any* namespace (regex wildcard)
+  io.of(/^\/.*/).on("connection", (socket) => {
+    console.log("🌐 namespace connection:", socket.nsp.name, socket.id);
+  });
+
+  // 3) Keep your default-namespace handler too
   io.on("connection", (socket) => {
-    console.log("✅ io.on('connection') fired:", socket.id);
+    console.log("✅ default / connection fired:", socket.id);
+  });
+
+  // (Optional) see namespace-level middleware activity
+  io.of(/^\/.*/).use((socket, next) => {
+    console.log("🧭 ns middleware:", socket.nsp.name, socket.handshake.query);
+    next();
   });
 
   return io;
 };
+
 
 const refreshTokenWithAuthClient = async (refreshToken: string): Promise<Tokens> => {
     try {
