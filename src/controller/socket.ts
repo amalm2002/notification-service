@@ -16,6 +16,10 @@ export const setupSocketIO = (server: HttpServer): SocketIOServer => {
             methods: ['GET', 'POST', 'PATCH'],
             credentials: true
         },
+        allowRequest: (req, callback) => {
+            // explicitly allow all query params
+            callback(null, true);
+        },
     })
 
     console.log(`Socket.IO initialized with CORS origin: ${process.env.CORS_ORIGIN}`);
@@ -144,13 +148,13 @@ const setupAdminEvents = (socket: AuthenticatedSocket, io: SocketIOServer, userI
 }
 
 const setupUserEvents = (socket: AuthenticatedSocket, io: SocketIOServer, userId: string) => {
-    socket.on('order-placed', ({ restaurantId: targetRestaurantId, orderId,orderNumber }: { restaurantId: string, orderId: string,orderNumber:number }) => {
+    socket.on('order-placed', ({ restaurantId: targetRestaurantId, orderId, orderNumber }: { restaurantId: string, orderId: string, orderNumber: number }) => {
         console.log(`Received the order-placed event for targetId:${targetRestaurantId} from the user:${userId}`);
         const targetSocketId = userSocketMap[targetRestaurantId];
         if (targetSocketId) {
             console.log('order id :', orderId);
             console.log(`Emitting order-created event to socket: ${targetSocketId} for restaurant: ${targetRestaurantId}`);
-            io.to(targetSocketId).emit("order-created", { orderId, restaurantId: targetRestaurantId ,orderNumber});
+            io.to(targetSocketId).emit("order-created", { orderId, restaurantId: targetRestaurantId, orderNumber });
         } else {
             console.error(`No socket found for restaurant: ${targetRestaurantId} in userSocketMap`);
             socket.emit("error", {
