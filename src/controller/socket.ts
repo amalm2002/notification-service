@@ -9,29 +9,52 @@ const authUtility = new AuthUtility();
 
 const userSocketMap: { [key: string]: string } = {};
 
+// export const setupSocketIO = (server: HttpServer): SocketIOServer => {
+//     const io = new SocketIOServer(server, {
+//         cors: {
+//             origin: process.env.CORS_ORIGIN,
+//             methods: ['GET', 'POST', 'PATCH'],
+//             credentials: true
+//         },
+//         allowRequest: (req, callback) => {
+//             // explicitly allow all query params
+//             callback(null, true);
+//         },
+//     })
+
+//     console.log(`Socket.IO initialized with CORS origin: ${process.env.CORS_ORIGIN}`);
+
+//     io.use(authenticateSocket);
+
+//     io.on("connection", (socket: AuthenticatedSocket) => {
+//         handleSocketConnection(socket, io)
+//     })
+
+//     return io
+// }
+
 export const setupSocketIO = (server: HttpServer): SocketIOServer => {
-    const io = new SocketIOServer(server, {
-        cors: {
-            origin: process.env.CORS_ORIGIN,
-            methods: ['GET', 'POST', 'PATCH'],
-            credentials: true
-        },
-        allowRequest: (req, callback) => {
-            // explicitly allow all query params
-            callback(null, true);
-        },
-    })
+  console.log("🟢 setupSocketIO booted on", process.env.PORT);
 
-    console.log(`Socket.IO initialized with CORS origin: ${process.env.CORS_ORIGIN}`);
+  const io = new SocketIOServer(server, {
+    cors: { origin: process.env.CORS_ORIGIN, credentials: true },
+    allowRequest: (req, cb) => {
+      console.log("🧩 allowRequest hit:", (req as any)._query);
+      cb(null, true);
+    },
+  });
 
-    io.use(authenticateSocket);
+  io.use((socket, next) => {
+    console.log("🔐 auth middleware start", socket.handshake.query);
+    next();
+  });
 
-    io.on("connection", (socket: AuthenticatedSocket) => {
-        handleSocketConnection(socket, io)
-    })
+  io.on("connection", (socket) => {
+    console.log("✅ io.on('connection') fired:", socket.id);
+  });
 
-    return io
-}
+  return io;
+};
 
 const refreshTokenWithAuthClient = async (refreshToken: string): Promise<Tokens> => {
     try {
