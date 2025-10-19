@@ -9,64 +9,64 @@ const authUtility = new AuthUtility();
 
 const userSocketMap: { [key: string]: string } = {};
 
-// export const setupSocketIO = (server: HttpServer): SocketIOServer => {
-//     const io = new SocketIOServer(server, {
-//         cors: {
-//             origin: process.env.CORS_ORIGIN,
-//             methods: ['GET', 'POST', 'PATCH'],
-//             credentials: true
-//         },
-//         allowRequest: (req, callback) => {
-//             // explicitly allow all query params
-//             callback(null, true);
-//         },
-//     })
-
-//     console.log(`Socket.IO initialized with CORS origin: ${process.env.CORS_ORIGIN}`);
-
-//     io.use(authenticateSocket);
-
-//     io.on("connection", (socket: AuthenticatedSocket) => {
-//         handleSocketConnection(socket, io)
-//     })
-
-//     return io
-// }
-
 export const setupSocketIO = (server: HttpServer): SocketIOServer => {
-  console.log("🟢 setupSocketIO booted on", process.env.PORT);
+    const io = new SocketIOServer(server, {
+        cors: {
+            origin: process.env.CORS_ORIGIN,
+            methods: ['GET', 'POST', 'PATCH'],
+            credentials: true
+        },
+        allowRequest: (req, callback) => {
+            // explicitly allow all query params
+            callback(null, true);
+        },
+    })
 
-  const io = new SocketIOServer(server, {
-    cors: { origin: process.env.CORS_ORIGIN, credentials: true },
-    allowRequest: (req, cb) => {
-      console.log("🧩 allowRequest hit:", (req as any)._query);
-      cb(null, true);
-    },
-  });
+    console.log(`Socket.IO initialized with CORS origin: ${process.env.CORS_ORIGIN}`);
 
-  // 1) Log raw Engine.IO connections (proves the transport is established)
-  io.engine.on("connection", (raw) => {
-    console.log("🧱 engine connection:", raw.id);
-  });
+    io.use(authenticateSocket);
 
-  // 2) Log connection for *any* namespace (regex wildcard)
-  io.of(/^\/.*/).on("connection", (socket) => {
-    console.log("🌐 namespace connection:", socket.nsp.name, socket.id);
-  });
+    io.on("connection", (socket: AuthenticatedSocket) => {
+        handleSocketConnection(socket, io)
+    })
 
-  // 3) Keep your default-namespace handler too
-  io.on("connection", (socket) => {
-    console.log("✅ default / connection fired:", socket.id);
-  });
+    return io
+}
 
-  // (Optional) see namespace-level middleware activity
-  io.of(/^\/.*/).use((socket, next) => {
-    console.log("🧭 ns middleware:", socket.nsp.name, socket.handshake.query);
-    next();
-  });
+// export const setupSocketIO = (server: HttpServer): SocketIOServer => {
+//   console.log("🟢 setupSocketIO booted on", process.env.PORT);
 
-  return io;
-};
+//   const io = new SocketIOServer(server, {
+//     cors: { origin: process.env.CORS_ORIGIN, credentials: true },
+//     allowRequest: (req, cb) => {
+//       console.log("🧩 allowRequest hit:", (req as any)._query);
+//       cb(null, true);
+//     },
+//   });
+
+//   // 1) Log raw Engine.IO connections (proves the transport is established)
+//   io.engine.on("connection", (raw) => {
+//     console.log("🧱 engine connection:", raw.id);
+//   });
+
+//   // 2) Log connection for *any* namespace (regex wildcard)
+//   io.of(/^\/.*/).on("connection", (socket) => {
+//     console.log("🌐 namespace connection:", socket.nsp.name, socket.id);
+//   });
+
+//   // 3) Keep your default-namespace handler too
+//   io.on("connection", (socket) => {
+//     console.log("✅ default / connection fired:", socket.id);
+//   });
+
+//   // (Optional) see namespace-level middleware activity
+//   io.of(/^\/.*/).use((socket, next) => {
+//     console.log("🧭 ns middleware:", socket.nsp.name, socket.handshake.query);
+//     next();
+//   });
+
+//   return io;
+// };
 
 
 const refreshTokenWithAuthClient = async (refreshToken: string): Promise<Tokens> => {
