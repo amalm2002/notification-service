@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notification-service
+  template:
+    metadata:
+      labels:
+        app: notification-service
+    spec:
+      containers:
+        - name: notification-service
+          image: amalm2002/notification-service:latest
+          ports:
+            - containerPort: 3010
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: PORT
+              value: "3010"
+            - name: CORS_ORIGIN
+              # value: "https://eatzaa-food-hub.vercel.app" 
+              value: "https://eatzaa.vercel.app" 
+
+            # Secrets
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: notification-secrets
+                  key: JWT_SECRET
+            - name: ACCESS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: notification-secrets
+                  key: ACCESS_TOKEN
+            - name: REFRESH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: notification-secrets
+                  key: REFRESH_TOKEN
